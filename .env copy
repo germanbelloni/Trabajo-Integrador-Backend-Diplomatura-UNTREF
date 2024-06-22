@@ -1,0 +1,5 @@
+PORT = 3008
+SECRET_KEY = minimal_key
+MONGO_URLSTRING = mongodb+srv://gerbelloni:germancito87@clustermongo.slxtyba.mongodb.net/
+DATABASE_NAME = supermercado
+COLLECTION_NAME = mercaderias
