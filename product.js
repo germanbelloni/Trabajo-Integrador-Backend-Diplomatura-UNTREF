@@ -8,6 +8,16 @@ const mercaderiaSchema = new mongoose.Schema({
   categoria: String,
 });
 
-const Mercaderia = mongoose.model("Mercaderia", mercaderiaSchema);
+const usuariosSchema = new mongoose.Schema({
+  username : String, 
+  password : String, 
+  email : String,
+})
 
-module.exports = Mercaderia;
+const Mercaderia = mongoose.model("Mercaderia", mercaderiaSchema);
+const Usuario = mongoose.model("Usuario", usuariosSchema)
+
+module.exports = {
+  Mercaderia,
+  Usuario,
+}

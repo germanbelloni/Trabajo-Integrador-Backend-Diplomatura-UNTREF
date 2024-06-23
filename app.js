@@ -4,10 +4,12 @@ const app = express();
 const jwt = require("jsonwebtoken");
 const morgan = require("morgan");
 const mongoose = require('mongoose')
-const Mercaderia = require('./product.js')
+const {Mercaderia, Usuario} = require('./product.js')
 const connectDB = require('./database.js')
 const port = process.env.PORT || 3000;
 const secretKey = process.env.SECRET_KEY;
+
+
 
 connectDB()
 
@@ -20,13 +22,11 @@ app.get("/", (req, res) => {
 });
 
 //Login del usuario donde se genera el JWT
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   console.log(`Datos recibidos: usuario: ${username}, password: ${password}`);
   //Autenticacion del usuario
-  const user = usuarios.find(
-    (u) => u.username === username && u.password === password
-  );
+  const user = await Usuario.findOne({username, password})
 
   if (!user) {
     return res.status(401).send({ error: "Credenciales invalidas" });
