@@ -5,3 +5,30 @@ Content-Type: application/json
     "username": "german",
     "password": "Hola"
 }
+###1.Obtener todos los productos (RUTA PROTEGIDA)
+GET http://localhost:3008/productos
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imdlcm1hbiIsImlhdCI6MTcxOTE1OTY5OSwiZXhwIjoxNzE5MTYzMjk5fQ.yMFS7nek677uzqUNiIn7LNnxkA73ZOlfqABlhnwd7Go
+
+###2. Obtener un producto por ID (RUTA PROTEGIDA)
+GET http://localhost:3008/productos/6677484a73a84c49299bb3d5
+Authorization:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imdlcm1hbiIsImlhdCI6MTcxOTE1OTY5OSwiZXhwIjoxNzE5MTYzMjk5fQ.yMFS7nek677uzqUNiIn7LNnxkA73ZOlfqABlhnwd7Go
+
+
+###2b. Obtener un producto por Codigo (RUTA PROTEGIDA)
+GET http://localhost:3008/productos/1234
+Authorization:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imdlcm1hbiIsImlhdCI6MTcxOTE1OTY5OSwiZXhwIjoxNzE5MTYzMjk5fQ.yMFS7nek677uzqUNiIn7LNnxkA73ZOlfqABlhnwd7Go
+
+###3. Filtrar un producto por nombre
+GET http://localhost:3008/productos/nombre/Detergente
+Authorization:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imdlcm1hbiIsImlhdCI6MTcxOTE3NjU5MCwiZXhwIjoxNzE5MTgwMTkwfQ.LkSdUCmSd-xRhzA8cMDli8DmUSe_QzJ7YAMTAyEKVPs
+
+###4. Agregar un producto
+POST http://localhost:3008/productos/
+content-type: application/json
+Authorization:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imdlcm1hbiIsImlhdCI6MTcxOTE4OTE4MCwiZXhwIjoxNzE5MTkyNzgwfQ.CMAP1KsOlpNv0d62zwwomitisFelUejlF2rdHgSnHLs
+
+{
+    "nombre": "Azufre",
+    "precio": 35.50,
+    "categoria": "Limpieza"
+}
