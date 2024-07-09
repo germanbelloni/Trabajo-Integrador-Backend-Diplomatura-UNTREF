@@ -9,15 +9,15 @@ const mercaderiaSchema = new mongoose.Schema({
 });
 
 const usuariosSchema = new mongoose.Schema({
-  username : String, 
-  password : String, 
-  email : String,
-})
+  username: String,
+  password: String,
+  email: String,
+});
 
 const Mercaderia = mongoose.model("Mercaderia", mercaderiaSchema);
-const Usuario = mongoose.model("Usuario", usuariosSchema)
+const Usuario = mongoose.model("Usuario", usuariosSchema);
 
 module.exports = {
   Mercaderia,
   Usuario,
-}
+};

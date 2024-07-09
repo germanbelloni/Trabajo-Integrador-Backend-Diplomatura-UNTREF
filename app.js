@@ -4,9 +4,11 @@ const app = express();
 const jwt = require("jsonwebtoken");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
 const { Mercaderia, Usuario } = require("./product.js");
 const connectDB = require("./database.js");
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 const port = process.env.PORT || 3000;
 const secretKey = process.env.SECRET_KEY;
 
@@ -15,6 +17,18 @@ connectDB();
 //Middleware
 app.use(express.json());
 app.use(morgan("dev"));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(
+  session({
+    secret: secretKey,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false,
+    },
+  })
+);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -30,14 +44,17 @@ app.post("/login", async (req, res) => {
   if (!user) {
     return res.status(401).send({ error: "Credenciales invalidas" });
   } else {
-    const token = jwt.sign({ username }, secretKey, { expiresIn: "1h" });
-    return res.json({ token });
+    const token = jwt.sign({ username }, secretKey, { expiresIn: "365d" });
+    // return res.json({ token });
+    res.cookie("token", token, { httpOnly: true, secure: false });
+
+    res.json({message: 'Inicio de sesion exitoso'})
   }
 });
 
 //Midlleware para verificar el token JWT
 const verifyToken = (req, res, next) => {
-  const token = req.headers["authorization"];
+  const token = req.cookies.token || req.headers["authorization"]?.split(" ")[1];
   if (!token) return res.status(401).json({ error: "No token provided" });
 
   //Verificacion del token
@@ -112,12 +129,53 @@ app.get("/productos/nombre/:nombre", verifyToken, async (req, res) => {
 
 //4. Agregar un producto
 app.post("/productos", verifyToken, async (req, res) => {
-  const nuevaMercaderia = new Mercaderia({...req.body, codigo: uuidv4()});
+  const nuevaMercaderia = new Mercaderia({ ...req.body, codigo: uuidv4() });
   try {
     await nuevaMercaderia.save();
     res.status(201).json(nuevaMercaderia);
   } catch (error) {
-    res.status(500).json({ message: "Error, no se pudo añadir el producto",error});
+    res
+      .status(500)
+      .json({ message: "Error, no se pudo añadir el producto", error });
+  }
+});
+
+//5. Modificar el precio de un producto
+app.patch("/productos/:id", verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const precioModificado = await Mercaderia.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+    if (!precioModificado) {
+      return res
+        .status(404)
+        .json({ message: "Producto no encontrado para cambiar su precio" });
+    } else {
+      res.json({
+        message: "Precio modificado parcialmente con exito",
+        precioModificado,
+      });
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: "Hubo un error al modificar el producto" });
+  }
+});
+
+//6. Borrar un producto
+app.delete("/productos/:id", verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const productoBorrado = await Mercaderia.findByIdAndDelete(id);
+    productoBorrado
+      ? res.json({ message: "Producto borrado con exito" })
+      : res
+          .status(404)
+          .json({ message: "No se encontro el producto para borrar" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error al borrar el producto" });
   }
 });
 
