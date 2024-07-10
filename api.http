@@ -8,7 +8,7 @@ Content-Type: application/json
 }
 ###1.Obtener todos los productos (RUTA PROTEGIDA)
 GET http://localhost:3008/productos
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imdlcm1hbiIsImlhdCI6MTcxOTQ5NzcyNSwiZXhwIjoxNzE5NTAxMzI1fQ.xPXV_hSFhn5dg_ewJRQ6SAlNj17fPzeoqJzUKl-qeLw
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imdlcm1hbiIsImlhdCI6MTcyMDU2NzY0NSwiZXhwIjoxNzUyMTAzNjQ1fQ.qzRdV8a7215PTMeugP4a-_ZnSSkQ83j3OnLU_Y_HtmQ
 
 ###2. Obtener un producto por ID (RUTA PROTEGIDA)
 GET http://localhost:3008/productos/6677484a73a84c49299bb3d5

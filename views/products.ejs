@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Productos</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
+    />
+  </head>
+  <body>
+    <h1>Productos</h1>
+    <a href="/productos/add">Agregar Nuevo Producto</a>
+    <ul>
+      <% mercaderia.forEach(function(producto) { %>
+      <li>
+        <a href="/productos/<%= producto._id %>"><%= producto.nombre %></a>
+        <form
+          action="/productos/<%= producto._id %>?_method=DELETE"
+          method="post"
+          style="display: inline"
+        >
+          <input type="hidden" name="_method" value="delete" />
+          <button type="submit">Delete</button>
+        </form>
+        <a href="/productos/edit/<%= producto._id %>">Edit</a>
+      </li>
+      <% }); %>
+    </ul>
+  </body>
+</html>

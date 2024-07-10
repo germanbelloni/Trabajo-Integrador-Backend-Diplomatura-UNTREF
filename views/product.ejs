@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <button style="display:inline">
+      <%= producto.nombre %>
+    </button>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
+    />
+  </head>
+  <body>
+    <h1>Detalle de productos</h1>
+    <p><strong>Codigo:</strong> <%= producto.codigo %></p>
+    <p><strong>Nombre:</strong> <%= producto.nombre %></p>
+    <p><strong>Precio:</strong> <%= producto.precio %></p>
+    <p><strong>Categoria:</strong> <%= producto.categoria %></p>
+    
+    <button
+      style="display: inline"
+      onclick="window.location.href='/productos/edit/<%= producto._id %>'"
+    >
+      Edit
+    </button>
+    <form
+      action="/productos/<%= producto._id %>?_method=DELETE"
+      method="post"
+      style="display: inline"
+    >
+      <input type="hidden" name="_method" value="delete" />
+      <button type="submit">Borrar</button>
+    </form>
+    <a href="/productos">Volver a Productos</a>
+  </body>
+</html>
