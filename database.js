@@ -9,7 +9,7 @@ const DATABASE_NAME = process.env.DATABASE_NAME;
 const connectDB = () => {
   return mongoose
     .connect(URI + DATABASE_NAME)
-    .then(() => console.log("Estas conectado a MongoDB"))
+    .then(() => console.log("Usuario conectado a MongoDB"))
     .catch((err) => console.log("Error al conectarse : ", err));
 };
 

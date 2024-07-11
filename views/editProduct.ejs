@@ -9,17 +9,20 @@
   </head>
   <body>
     <h1>Editar Producto</h1>
-    <form action="/productos/edit/<%= producto._id %>?_method=PATCH" method="post">
+    <form
+      action="/productos/edit/<%= producto._id %>?_method=PATCH"
+      method="post"
+    >
       <input type="hidden" name="_method" value="patch" />
       <label for="codigo">Codigo:</label>
       <input
-      type="number"
-      id="codigo"
-      name="codigo"
-      placeholder="<%= producto.codigo %>"
-      value="<%= producto.codigo %>"
-      required
-      oninput="this.value = parseInt(this.value) || ''"
+        type="number"
+        id="codigo"
+        name="codigo"
+        placeholder="<%= producto.codigo %>"
+        value="<%= producto.codigo %>"
+        required
+        oninput="this.value = parseInt(this.value) || ''"
       />
       <label for="nombre">Nombre:</label>
       <input
@@ -45,8 +48,9 @@
         value="<%= producto.categoria %>"
         required
       />
-      
+
       <button type="submit">Actualizar Producto</button>
+      <a href="/productos">Volver a Productos</a>
     </form>
   </body>
 </html>

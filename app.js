@@ -9,7 +9,6 @@ const methodOverride = require("method-override");
 const bodyParser = require("body-parser");
 const { Mercaderia, Usuario } = require("./product.js");
 const connectDB = require("./database.js");
-const { v4: uuidv4 } = require("uuid");
 const port = process.env.PORT || 3000;
 const secretKey = process.env.SECRET_KEY;
 
@@ -25,20 +24,25 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(cookieParser());
 
+//Ruta Principal
 app.get("/", (req, res) => {
   res.render("index");
 });
 
+app.get('*', (req, res) => {
+  res.render('404');
+});
+
+//Registro
 app.get("/register", (req, res) => {
   res.render("register");
 });
 
 app.post("/register", async (req, res) => {
   const nuevoUsuario = new Usuario({ ...req.body });
-
   try {
     await nuevoUsuario.save();
-    res.status(201).json(nuevoUsuario);
+    res.status(201).redirect('/')
   } catch (error) {
     res
       .status(500)
@@ -46,11 +50,12 @@ app.post("/register", async (req, res) => {
   }
 });
 
+//Login
 app.get("/login", (req, res) => {
   res.render("login");
 });
 
-//Login del usuario donde se genera el JWT
+//Login generación JWT
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   console.log(`Datos recibidos: usuario: ${username}, password: ${password}`);
@@ -61,19 +66,17 @@ app.post("/login", async (req, res) => {
     return res.status(401).render("login");
   } else {
     const token = jwt.sign({ username }, secretKey, { expiresIn: "365d" });
-    // return res.json({ token });
     res.cookie("token", token, { httpOnly: true, secure: false });
-    //res.json({message: 'Inicio de sesion exitoso'})
     res.render("index");
   }
 });
 
-//Midlleware para verificar el token JWT
+//Verificación del token JWT
 const verifyToken = (req, res, next) => {
   const token =
     req.cookies.token || req.headers["authorization"]?.split(" ")[1];
   console.log(req.cookies.token);
-  if (!token) return res.status(401).json({ error: "No token provided" });
+  if (!token) return res.status(401).redirect('/');
 
   //Verificacion del token
   jwt.verify(token, secretKey, (err, decoded) => {
@@ -82,6 +85,7 @@ const verifyToken = (req, res, next) => {
   });
 };
 
+//Logout
 app.get("/logout", (req, res) => {
   res.clearCookie("token");
   res.status(200).redirect("/");
@@ -98,14 +102,15 @@ app.get("/productos", verifyToken, async (req, res) => {
 });
 
 //4. Agregar un producto
-
 app.get("/productos/add", verifyToken, async (req, res) => {
   return res.render("addProduct");
 });
 
 app.post("/productos", verifyToken, async (req, res) => {
   // Encontrar el máximo código actual
-  const maxCodigo = await Mercaderia.findOne().sort({ codigo: -1 }).select('codigo');
+  const maxCodigo = await Mercaderia.findOne()
+    .sort({ codigo: -1 })
+    .select("codigo");
 
   // Generar un nuevo código único
   const nuevoCodigo = maxCodigo ? maxCodigo.codigo + 1 : 1;
@@ -121,16 +126,16 @@ app.post("/productos", verifyToken, async (req, res) => {
   }
 });
 
-//2.Obtener un producto (Ruta protegida por token)
+//2.Obtener un producto por ID (Ruta protegida por token)
 app.get("/productos/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
-
   const producto = await Mercaderia.findById(id);
   producto
     ? res.render("product", { producto })
     : res.status(404).render("404");
 });
 
+//2b. Obtener un producto por codigo
 app.get("/productos/codigo/:codigo", verifyToken, async (req, res) => {
   const { codigo } = req.params;
   const codigoEnNumero = parseInt(codigo);
@@ -166,9 +171,8 @@ app.get("/productos/nombre/:nombre", async (req, res) => {
     res.status(500).json({ message: "Error al buscar el producto" });
   }
 });
+
 //5. Modificar el precio de un producto
-
-
 app.get("/productos/edit/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
@@ -191,12 +195,14 @@ app.patch("/productos/edit/:id", verifyToken, async (req, res) => {
       new: true,
     });
     if (!precioModificado) {
-      return res.status(404).render('404');
+      return res.status(404).render("404");
     } else {
-      res.status(200).redirect('/productos');
+      res.status(200).redirect("/productos");
     }
   } catch (error) {
-    return res.status(500).json({ error: "Hubo un error al modificar el producto" });
+    return res
+      .status(500)
+      .json({ error: "Hubo un error al modificar el producto" });
   }
 });
 
@@ -212,6 +218,7 @@ app.delete("/productos/:id", verifyToken, async (req, res) => {
   }
 });
 
+//Listen::port
 app.listen(port, () => {
   console.log(`API corriendo en el puerto http://localhost:${port}`);
 });
