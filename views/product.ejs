@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <button style="display:inline">
-      <%= producto.nombre %>
-    </button>
+    <button style="display: inline"><%= producto.nombre %></button>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
@@ -15,7 +13,7 @@
     <p><strong>Nombre:</strong> <%= producto.nombre %></p>
     <p><strong>Precio:</strong> <%= producto.precio %></p>
     <p><strong>Categoria:</strong> <%= producto.categoria %></p>
-    
+
     <button
       style="display: inline"
       onclick="window.location.href='/productos/edit/<%= producto._id %>'"

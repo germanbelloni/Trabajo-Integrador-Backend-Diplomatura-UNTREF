@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Productos Filtrados</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
+    />
+  </head>
+  <body>
+    <h1>Productos Filtrados</h1>
+    <% if (productos) { %>
+    <ul>
+      <% productos.forEach(producto => { %>
+      <li>
+        <h2><%= producto.nombre %></h2>
+        <p>Código: <%= producto.codigo %></p>
+        <p>Precio: <%= producto.precio %></p>
+        <p>Categoría: <%= producto.categoria %></p>
+      </li>
+      <% }); %>
+    </ul>
+    <% } else { %>
+    <p>No se encontraron productos con ese nombre.</p>
+    <% } %>
+  </body>
+</html>

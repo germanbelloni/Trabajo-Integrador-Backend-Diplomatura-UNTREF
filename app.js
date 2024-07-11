@@ -7,7 +7,6 @@ const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const methodOverride = require("method-override");
 const bodyParser = require("body-parser");
-const session = require("express-session");
 const { Mercaderia, Usuario } = require("./product.js");
 const connectDB = require("./database.js");
 const { v4: uuidv4 } = require("uuid");
@@ -20,23 +19,11 @@ connectDB();
 app.set("view engine", "ejs");
 app.use(express.json());
 app.use(morgan("dev"));
-//app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(cookieParser());
-app.use(
-  session({
-    secret: secretKey,
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      secure: false,
-      maxAge: 60000,
-      httpOnly: true,
-    },
-  })
-);
 
 app.get("/", (req, res) => {
   res.render("index");
@@ -96,8 +83,8 @@ const verifyToken = (req, res, next) => {
 };
 
 app.get("/logout", (req, res) => {
-  req.session.destroy();
-  res.render("index");
+  res.clearCookie("token");
+  res.status(200).redirect("/");
 });
 
 //1. Obtener todos los productos (Ruta protegida por token)
@@ -110,60 +97,23 @@ app.get("/productos", verifyToken, async (req, res) => {
   }
 });
 
-//2.Obtener un producto (Ruta protegida por token)
-app.get("/productos/:id", verifyToken, async (req, res) => {
-  const { id } = req.params;
-
-  const producto = await Mercaderia.findById(id);
-  producto
-    ? res.render('product', {producto})
-    : res.status(404).json({ message: "Producto no encontrado" });
-});
-
-app.get("/productos/:codigo", verifyToken, async (req, res) => {
-  const codigo = Number(req.params.codigo);
-
-  if (isNaN(codigo)) {
-    return res.status(400).json({ message: "Código de producto inválido" });
-  }
-  try {
-    const mercaderia = await Mercaderia.findOne({ codigo });
-    mercaderia
-      ? res.json(mercaderia)
-      : res.status(404).json({ message: "Producto no encontrado" });
-  } catch (error) {
-    console.error(err);
-    res.status(500).json({ message: "Error interno del servidor" });
-  }
-});
-
-//3. Filtrar productos
-app.get("/productos/nombre/:nombre", verifyToken, async (req, res) => {
-  const { nombre } = req.params;
-
-  try {
-    const nombreMercaderia = await Mercaderia.find({
-      nombre: new RegExp(nombre, "i"),
-    });
-    nombreMercaderia
-      ? res.json(nombreMercaderia)
-      : res.status(404).json({ message: "Error al buscar el producto" });
-  } catch (error) {
-    res.status(500).json({ message: "Error al buscar el producto" });
-  }
-});
-
 //4. Agregar un producto
 
 app.get("/productos/add", verifyToken, async (req, res) => {
   return res.render("addProduct");
 });
 
-app.post("/productos/", verifyToken, async (req, res) => {
-  const nuevaMercaderia = new Mercaderia({ ...req.body, codigo: uuidv4() });
+app.post("/productos", verifyToken, async (req, res) => {
+  // Encontrar el máximo código actual
+  const maxCodigo = await Mercaderia.findOne().sort({ codigo: -1 }).select('codigo');
+
+  // Generar un nuevo código único
+  const nuevoCodigo = maxCodigo ? maxCodigo.codigo + 1 : 1;
+
+  const nuevaMercaderia = new Mercaderia({ ...req.body, codigo: nuevoCodigo });
   try {
     await nuevaMercaderia.save();
-    res.status(201).render("products", { mercaderia });
+    res.status(201).redirect("/productos");
   } catch (error) {
     res
       .status(500)
@@ -171,34 +121,82 @@ app.post("/productos/", verifyToken, async (req, res) => {
   }
 });
 
+//2.Obtener un producto (Ruta protegida por token)
+app.get("/productos/:id", verifyToken, async (req, res) => {
+  const { id } = req.params;
+
+  const producto = await Mercaderia.findById(id);
+  producto
+    ? res.render("product", { producto })
+    : res.status(404).render("404");
+});
+
+app.get("/productos/codigo/:codigo", verifyToken, async (req, res) => {
+  const { codigo } = req.params;
+  const codigoEnNumero = parseInt(codigo);
+
+  try {
+    const productos = await Mercaderia.find({
+      codigo: codigoEnNumero,
+    });
+
+    productos
+      ? res.render("product_filter", { productos })
+      : res.status(404).render("404");
+  } catch (error) {
+    res.status(500).json({ message: "Error al buscar el producto" });
+  }
+});
+
+//3. Filtrar productos
+app.get("/productos/nombre/:nombre", async (req, res) => {
+  const { nombre } = req.params;
+
+  try {
+    const productos = await Mercaderia.find({
+      nombre: new RegExp(nombre, "i"), // Búsqueda insensible a mayúsculas/minúsculas
+    });
+
+    if (productos.length > 0) {
+      res.render("product_filter", { productos });
+    } else {
+      res.status(404).render("404");
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Error al buscar el producto" });
+  }
+});
 //5. Modificar el precio de un producto
+
 
 app.get("/productos/edit/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
-  const producto = Mercaderia.findById(id);
-  return res.render("editProduct", { producto });
+  try {
+    const producto = await Mercaderia.findById(id);
+    if (!producto) {
+      return res.status(404).render("404");
+    }
+    return res.render("editProduct", { producto });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: "Hubo un error al obtener el producto" });
+  }
 });
 
-app.patch("/productos/:id", verifyToken, async (req, res) => {
+app.patch("/productos/edit/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
     const precioModificado = await Mercaderia.findByIdAndUpdate(id, req.body, {
       new: true,
     });
     if (!precioModificado) {
-      return res
-        .status(404)
-        .json({ message: "Producto no encontrado para cambiar su precio" });
+      return res.status(404).render('404');
     } else {
-      res.json({
-        message: "Precio modificado parcialmente con exito",
-        precioModificado,
-      });
+      res.status(200).redirect('/productos');
     }
   } catch (error) {
-    return res
-      .status(500)
-      .json({ error: "Hubo un error al modificar el producto" });
+    return res.status(500).json({ error: "Hubo un error al modificar el producto" });
   }
 });
 
@@ -208,7 +206,7 @@ app.delete("/productos/:id", verifyToken, async (req, res) => {
   try {
     const mercaderia = await Mercaderia.findByIdAndDelete(id);
     console.log(mercaderia);
-    mercaderia ? res.redirect('/productos') : res.status(404).render("404");
+    mercaderia ? res.redirect("/productos") : res.status(404).render("404");
   } catch (error) {
     return res.status(500).json({ message: "Error al borrar el producto" });
   }
