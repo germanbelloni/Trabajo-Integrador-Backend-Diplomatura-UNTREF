@@ -29,10 +29,6 @@ app.get("/", (req, res) => {
   res.render("index");
 });
 
-app.get('*', (req, res) => {
-  res.render('404');
-});
-
 //Registro
 app.get("/register", (req, res) => {
   res.render("register");
@@ -42,7 +38,7 @@ app.post("/register", async (req, res) => {
   const nuevoUsuario = new Usuario({ ...req.body });
   try {
     await nuevoUsuario.save();
-    res.status(201).redirect('/')
+    res.status(201).redirect("/");
   } catch (error) {
     res
       .status(500)
@@ -76,11 +72,11 @@ const verifyToken = (req, res, next) => {
   const token =
     req.cookies.token || req.headers["authorization"]?.split(" ")[1];
   console.log(req.cookies.token);
-  if (!token) return res.status(401).redirect('/');
+  if (!token) return res.status(401).redirect("/");
 
   //Verificacion del token
   jwt.verify(token, secretKey, (err, decoded) => {
-    err ? res.status(401).render("404") : (req.decoded = decoded);
+    err ? res.status(401).render("index") : (req.decoded = decoded);
     next();
   });
 };
@@ -216,6 +212,10 @@ app.delete("/productos/:id", verifyToken, async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: "Error al borrar el producto" });
   }
+});
+
+app.get("*", (req, res) => {
+  res.render("404");
 });
 
 //Listen::port

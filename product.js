@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 //Definimos el esquema y el modelo de mongoose
 const mercaderiaSchema = new mongoose.Schema({
-  codigo: String,
+  codigo: Number,
   nombre: String,
   precio: Number,
   categoria: String,
